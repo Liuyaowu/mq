@@ -37,6 +37,13 @@ public class MySimpleSyncProducer {
         //重试间隔设置
         props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 300);
 
+        // kafka默认会创建⼀个消息缓冲区，⽤来存放要发送的消息，缓冲区是32m
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        // kafka本地线程会去缓冲区中⼀次拉16k的数据，发送到broker
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        // 如果线程拉不到16k的数据，间隔10ms也会将已拉到的数据发到broker
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 10);
+
         // 2.创建⽣产消息的客户端，传⼊参数
         Producer<String, String> producer = new KafkaProducer<>(props);
 
