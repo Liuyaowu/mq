@@ -2,13 +2,12 @@ package com.mobei.kafka.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author liuyaowu
@@ -37,6 +36,45 @@ public class MySimpleConsumer {
 
         //1.创建⼀个消费者的客户端
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+
+        // 指定分区消费
+        consumer.assign(Arrays.asList(new TopicPartition(TOPIC_NAME, 0)));
+
+        // 从头消费
+        consumer.assign(Arrays.asList(new TopicPartition(TOPIC_NAME, 0)));
+        consumer.seekToBeginning(Arrays.asList(new TopicPartition(TOPIC_NAME, 0)));
+
+        // 指定offset消费
+        consumer.assign(Arrays.asList(new TopicPartition(TOPIC_NAME, 0)));
+        consumer.seek(new TopicPartition(TOPIC_NAME, 0), 10);
+
+        // 指定时间消费
+        List<PartitionInfo> topicPartitions = consumer.partitionsFor(TOPIC_NAME);
+        //从1⼩时前开始消费
+        long fetchDataTime = System.currentTimeMillis() - 1000 * 60 * 60;
+        Map<TopicPartition, Long> map = new HashMap<>();
+        for (PartitionInfo par : topicPartitions) {
+            map.put(new TopicPartition(TOPIC_NAME, par.partition()),
+                    fetchDataTime);
+        }
+        Map<TopicPartition, OffsetAndTimestamp> parMap =
+                consumer.offsetsForTimes(map);
+        for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry :
+                parMap.entrySet()) {
+            TopicPartition key = entry.getKey();
+            OffsetAndTimestamp value = entry.getValue();
+            if (key == null || value == null) continue;
+            Long offset = value.offset();
+            System.out.println("partition-" + key.partition() +
+                    "|offset-" + offset);
+            System.out.println();
+            //根据消费⾥的timestamp确定offset
+            if (value != null) {
+                consumer.assign(Arrays.asList(key));
+                consumer.seek(key, offset);
+            }
+        }
+
         //2. 消费者订阅主题列表
         consumer.subscribe(Arrays.asList(TOPIC_NAME));
         while (true) {
