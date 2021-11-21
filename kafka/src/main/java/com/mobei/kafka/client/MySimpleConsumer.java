@@ -28,10 +28,10 @@ public class MySimpleConsumer {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,  StringDeserializer.class.getName());
 
-        // 是否⾃动提交offset，默认就是true
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
-        // ⾃动提交offset的间隔时间
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+//        // 是否⾃动提交offset，默认就是true
+//        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+//        // ⾃动提交offset的间隔时间
+//        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
 
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
@@ -48,6 +48,14 @@ public class MySimpleConsumer {
                 //4.打印消息
                 log.error("收到消息：partition = {},offset = {}, key = {}, value = {}",
                         record.partition(), record.offset(), record.key(), record.value());
+            }
+
+            //所有的消息已消费完
+            if (records.count() > 0) {
+                //有消息
+                // ⼿动同步提交offset，当前线程会阻塞直到offset提交成功
+                // ⼀般使⽤同步提交，因为提交之后⼀般也没有什么逻辑代码了
+                consumer.commitSync();//=======阻塞=== 提交成功
             }
 
         }
