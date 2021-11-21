@@ -27,6 +27,14 @@ public class MySimpleConsumer {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, CONSUMER_GROUP_NAME);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,  StringDeserializer.class.getName());
+
+        // 是否⾃动提交offset，默认就是true
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        // ⾃动提交offset的间隔时间
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+
         //1.创建⼀个消费者的客户端
         KafkaConsumer<String, String> consumer = new KafkaConsumer< >(props);
         //2. 消费者订阅主题列表
@@ -41,6 +49,7 @@ public class MySimpleConsumer {
                 log.error("收到消息：partition = {},offset = {}, key = {}, value = {}",
                         record.partition(), record.offset(), record.key(), record.value());
             }
+
         }
     }
 
